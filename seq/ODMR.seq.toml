@@ -1,0 +1,12 @@
+
+type = "pulsed-ODMR"
+time_unit = 'us' # microseconds
+
+start = [1, 1]
+half_pi = [5, 0.5] # start, duration
+
+laser_sig = [10, 40]
+read_sig = [10.5, 1]
+
+laser_ref = [60, 40]
+read_ref = [60.5, 1]

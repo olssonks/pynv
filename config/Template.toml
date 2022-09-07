@@ -1,0 +1,38 @@
+sample = 'tyrion'
+project = 'OptBayes'
+author = 'Kevin'
+
+[measurement]
+type = 'ODMR'
+mw_amps = [0] #dBm
+mw_freq_ranges = [[2400, 3400]]
+sequence = 'seq_file'
+
+[sig_gen]
+number_sgs = 1
+ip_addresses = ["ip"]
+port =5025
+
+[daq]
+daq_device = 'dev1'
+terminal_type = 'RSE'
+units = 'Volts'
+fill_mode = 'channel'
+
+[daq.analog_input]
+ai_channels = ['ai0']
+ai_samples = 1024
+ai_sample_rate = 1e6
+ai_time_source = 'PFI0'
+ai_voltage_limits = 1
+ai_active_edge = 'rising'
+
+[daq.analog_output]
+ao_channels = ['ao0']
+ao_samples = 1024
+ao_sample_rate = 25e3
+ao_time_source = 'PFI1'
+ao_voltage_limts = 10
+ao_active_edge = 'rising'
+
+[other]
