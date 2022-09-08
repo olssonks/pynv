@@ -4,24 +4,24 @@
 import numpy as np
 import tables
 
-config_file = ''
-
 
 class Logger:
 
-    def __init__(self, file_name, config=config_file):
+    def __init__(self, 
+                 file_name, 
+                 config = {}):
         ## default compression settings
-        self.complevel = 5
+        self.complevel = 9
         self.complib = 'blosc'
         self.bitshuffle = True
 
-        self.meas_type = self.get_meas_type(file_name)
-        self.meas_num = 0
-
         self.file_name = file_name
         self.h5file = self.get_file(self.file_name)
+        self.meas_type = self.get_meas_type(file_name)
+        self.meas_num = 0
+        
         self.data_location = self.set_loc(config)
-
+        
         self.expectedrows = 512
         self.atom = tables.Atom.from_sctype('float64')
         self.chunksize = (512, 256)
@@ -61,57 +61,76 @@ class Logger:
 
         m_type = self.meas_type
 
-        if self.h5file.__contains__('/' + m_type):
+        if (self.h5file.__contains__('/' + m_type) \
+            and len(dict(self.h5file.root\
+                         ['/' + m_type +  f'/{m_type}{self.meas_num:03d}']\
+                             ._v_children
+                        ))
+            ):
+                
             self.meas_type = m_type
             meas = self.h5file.root['/' + m_type]
             self.meas_num = len(dict(meas._v_children).keys())
             loc = self.h5file.create_group(meas,
-                                           m_type + f'{self.meas_num:03d}')
-            self.h5file.set_node_attr(loc, 'config', meas_config)
+                                           m_type 
+                                           + f'{self.meas_num:03d}')
+            self.h5file.set_node_attr(loc, 'config', str(meas_config) )
             self.meas_type = m_type
             self.meas_num = self.meas_num + 1
         else:
-            loc = self.h5file.create_group(self.file.root, m_type)
+            meas = self.h5file.create_group(self.h5file.root, m_type)
             self.meas_num = 0
             loc = self.h5file.create_group(meas,
-                                           m_type + f'{self.meas_num:03d}')
+                                           m_type 
+                                           + f'{self.meas_num:03d}')
+            self.h5file.set_node_attr(loc, 'config', str(meas_config) )
             self.meas_type = m_type
             self.meas_num = 1
-
+        
+        self.h5file.flush()
         return loc
 
     def log_raw(self, data, info=''):
 
-        if not self.h5file.__contains__(self.data_location + '/raw'):
+        if not self.h5file.__contains__('/'+ self.data_location._v_name 
+                                        + '/raw'):
             dshape = list(data.shape)
-            array_shape = [0].append(dshape)
-            self.current_array['raw'] = self.h5file.creat_earray(
+            array_shape = [0]
+            array_shape.extend(dshape)
+            self.current_arrays['raw'] = self.h5file.create_earray(
                 self.data_location,
                 'raw',
                 atom=self.atom,
                 shape=array_shape,
                 expectedrows=self.expectedrows)
-        self.current_array['raw'].append(data)
-        if not len(info):
-            self.set_node_attr(self.current_array, 'info', info)
-
+        
+        self.current_arrays['raw'].append([data])
+        
+        if len(info):
+            self.h5file.set_node_attr(self.current_arrays['raw'], 'info', str(info) )
+        
+        self.h5file.flush()
         return
 
     def log_reduced(self, data, info=''):
 
-        if not self.file.__contains__(self.data_location + '/reduced'):
+        if not self.file.__contains__('/'+ self.data_location._v_name  
+                                      + '/reduced'):
             dshape = list(data.shape)
-            array_shape = [0].append(dshape)
-            self.current_array['reduced'] = self.h5file.creat_earray(
+            array_shape = [0]
+            array_shape.extend(dshape)
+            self.current_arrays['reduced'] = self.h5file.create_earray(
                 self.data_location,
                 'reduced',
                 atom=self.atom,
                 shape=array_shape,
                 expectedrows=self.expectedrows)
-        self.current_array[reduced].append(data)
-        if not len(info):
-            self.set_node_attr(self.current_array, 'info', info)
-
+        self.current_arrays['reduced'].append([data])
+        
+        if len(info):
+            self.set_node_attr(self.current_arrays, 'info', str(info))
+        
+        self.h5file.flush()
         return
 
     # def block(self, number):
