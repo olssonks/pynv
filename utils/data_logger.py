@@ -1,5 +1,5 @@
 # Kevin Olsson
-# Last updated: Sep 09 2022
+# Last updated: Sep 12 2022
 
 import numpy as np
 import tables
@@ -35,6 +35,7 @@ class Logger:
 
         return
 
+
     def get_file(self, name):
         filt = tables.Filters(complevel=self.complevel,
                               complib=self.complib,
@@ -47,6 +48,7 @@ class Logger:
         file = tables.open_file(name, mode='a', filters=filt)
         return file
 
+
     def set_meas_type(self, m_type):
         '''Check name for type of measurement'''
         if m_type in measurement_types:
@@ -56,6 +58,7 @@ class Logger:
             self.meas_type = 'OTHER'
         self.data_location = self.set_loc(self.meas_config)
         return
+
 
     def set_loc(self, meas_config):
         '''
@@ -68,7 +71,6 @@ class Logger:
         location: '/ODMR/M004'
 
         '''
-
         m_type = self.meas_type
 
         if (self.h5file.__contains__('/' + m_type)
@@ -102,6 +104,7 @@ class Logger:
         self.h5file.flush()
         return loc
 
+
     def log_data(self, data, genre, info=''):
 
         if not self.h5file.__contains__(self.data_location._v_pathname
@@ -129,28 +132,6 @@ class Logger:
         self.h5file.flush()
         return
 
-    def log_reduced(self, data, info=''):
-
-        if not self.file.__contains__('/' + self.data_location._v_name
-                                      + '/reduced'):
-            dshape = list(data.shape)
-            array_shape = [0]
-            array_shape.extend(dshape)
-            self.current_arrays['reduced'] = self.h5file.create_earray(
-                self.data_location,
-                'reduced',
-                atom=self.atom,
-                shape=array_shape,
-                expectedrows=self.expectedrows)
-        self.current_arrays['reduced'].append([data])
-
-        if len(info):
-            self.h5file.set_node_attr(self.current_arrays['reduced'],
-                                      'info',
-                                      str(info))
-
-        self.h5file.flush()
-        return
 
     # def block(self, number):
     #     ## return block represetation of number (i.e. in powers of 2)
@@ -181,6 +162,7 @@ class Reader:
 
         return
 
+
     def set_meas_type(self, m_type):
         '''Checks if m_type is in file and sets it to measurement type'''
         file_children = list(dict(self.h5file.root._v_children).keys())
@@ -189,6 +171,13 @@ class Reader:
         else:
             print('Type not in file')
         return
+    
+    
+    def get_meas_types(self):
+        '''Returns all types of measurements present in h5file'''
+        all_types = dict(self.h5file.root._v_children).keys()
+        return list(all_types)
+
 
     def read_recent(self):
         '''Returns data of most recently logged measurement'''
@@ -204,7 +193,7 @@ class Reader:
         return self.h5file.root[recent].read()
     
     
-    def inro_recent(self):
+    def info_recent(self):
         '''Returns attributes of most recently logged measurement'''
         data = {}
         for node in self.h5file:
@@ -217,10 +206,29 @@ class Reader:
         
         return self.h5file.root[recent]._v_attrs
     
+    
     def read_type(self, m_type):
+        '''Read all from specified measurement type
+            Returns dict of all data
+        '''
         data = {}
-        for array in self.h5file.root[m_type]._v_children:
-            data = array
-        return
+        for node in self.h5file.root[m_type]._f_walknodes('Array'):
+            pare_name = node._v_parent._v_name
+            node_name = node._v_name
+            data[pare_name][node_name] = node.read()
+        
+        return data
+    
+    
+    def info_type(self, m_type):
+        '''Returns dictionary of attribute set of each measurement 
+            in specified type
+        '''
+        info  = {}
+        for group in dict(self.h5file.root[m_type]._v_children).keys():
+            info[str(group._v_name)] = group._v_attrs
+            
+        return info
+
 
         # End of Class
