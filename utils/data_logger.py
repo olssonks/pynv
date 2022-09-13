@@ -27,9 +27,9 @@ class Logger:
 
         
 
-        self.expectedrows = 512
+        self.expectedrows = 128
         self.atom = tables.Atom.from_sctype('float64')
-        self.chunkshape = (128,2,512)
+        self.chunkshape = (128,2,256)
 
         self.current_arrays = {}
 
