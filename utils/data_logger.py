@@ -29,7 +29,7 @@ class Logger:
 
         self.expectedrows = 512
         self.atom = tables.Atom.from_sctype('float64')
-        self.chunksize = (256, 256)
+        self.chunkshape = (128,2,512)
 
         self.current_arrays = {}
 
@@ -117,7 +117,9 @@ class Logger:
                 f'{genre}',
                 atom=self.atom,
                 shape=array_shape,
-                expectedrows=self.expectedrows)
+                expectedrows=self.expectedrows,
+                chunkshape = self.chunkshape
+            )
 
         self.current_arrays[f'{genre}'].append([data])
 
