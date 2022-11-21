@@ -11,7 +11,7 @@ def get_args():
     args = argparser.parse_args()
     return args.config_file
 
-def get_config():
+def get_configs():
   config_file = get_args()
   with open(str(config_file), 'rb') as f:
     configs = tomlib.load(f)
@@ -19,4 +19,4 @@ def get_config():
 
 if __name__=='__main__':
   print('whaddup')
-  print(get_config())
+  print(get_configs())

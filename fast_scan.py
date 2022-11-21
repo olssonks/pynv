@@ -1,16 +1,19 @@
 import queue
 import threading
+import time
 
+## Instrument Control (DAQ and Signal Generator)
 from srs import SG380
 from nidaq import DAQ
-from utils.data_logger import Logger
-from utils.Args import get_configs
-
-import numpy as np
 import PyDAQmx
 import time
 
+## Utilities
+from utils.Args import get_configs
+from utils.data_logger import Logger
+from utils.simple_plots import update_plot, fast_scan_fig
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 def main(daq, cue, event):
@@ -19,9 +22,7 @@ def main(daq, cue, event):
     for i in range(10):
     
         daq.start_task( daq.AI_task )
-        
         data = daq.AI_read()
-        
         daq.stop_task(daq.AI_task)
         
         cue.put(data)
@@ -78,32 +79,29 @@ if __name__ == "__main__":
 
     m_type = configs['measurement']['type']
     data_genres = configs['data']['genres'][0]
-    amp = configs['measurement']['amps'][0]
-    freq = configs['measurement']['freqs'][0]
-    sweep = configs['measurement']['sweep']
-    
+    info = configs['data']
 
-    record = Logger(file_name, config= configs)
+    record = Logger(file_name, configs=configs)
     record.set_meas_type(m_type)
 
-    info = configs['data']
-    
-    sg = SG380(configs['sig_gen']['IPs'])
-    sg.SetMWFreq(freq)
-    sg.SetMWAmpl(amp)
-    sg.SetMWStat(1)
+    ## Set up signal generator
+    IP = configs['sig_gen']['IPs'][0]
+    sg = SG380(IPaddress=IP)
+    sweep = configs['measurement']['sweep']
     sg.SetMWSweep(sweep['center'], 
                   sweep['span'], 
                   sweep['rate']
                   )
+    sg.SetMWStat(1)
     
-    samps = configs['daq']['ai_samples']
-    channels = configqs['daq']['ai_channels']
-    num_chan = length(channels)
+    ## Set up DAQ
+    samps = configs['daq']['analog_input']['ai_samples']
+    channels = configs['daq']['analog_input']['ai_channels']
+    num_chan = len(channels)
     
-    daq = DAQ(configs['daq']['daq_device'], 
-              SampleRate=config['daq']['ai_sample_rate'])
-    
+    #daq = DAQ(configs=configs)
+    daq = DAQ(DeviceName=configs['daq_device'], 
+              SampleRate=100e3)
     daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_RSE
     
     daq.prep_AI_channel(channels, 
@@ -114,12 +112,21 @@ if __name__ == "__main__":
     daq.prep_Analog_trigger(daq.AI_task, 
                             'APFI0', 
                             level=-0.88)
+    
+    # daq = DAQ('dev1', SampleRate=100e3)
+    # daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_RSE
+
+    # samps = 10000
+
+    # daq.prep_AI_channel(['ai23'], samps, num_chan = 1)
+
+    # daq.prep_Analog_trigger(daq.AI_task, 'APFI0', level=-0.88)
 
     
     cue_acq = queue.Queue()
     event = threading.Event()
     
-    fig, axs, plot1 = create_fig(samps)
+    fig, axs, plot1 = fast_scan_fig(samps, configs)
     plt.show()
     
     m_thread = threading.Thread(target=main, 
@@ -142,20 +149,23 @@ if __name__ == "__main__":
     data_list = []
     while event.is_set() or not cue_acq.empty():
         pop_data = cue_acq.get(timeout = 5)
-        record.log_data(pop_data, data_genres[0], info=info)
+        record.log_data(pop_data, data_genres, info=info)
         #cue_rec.put(pop_data)
         data_list.append(pop_data)
         new_data = np.array(data_list)
         
         avg_data = new_data.mean(axis = 0)
         
-        fit_data(data, configs)
+        ## find camera trigger points
+        #fit_data(data, configs)  ## fit probably not necessary, use max/min of derivated
         
         update_plot(new_data, fig, axs, plot1)
     
     #record.log_data(new_data, data_genres[0], info=info)
     record.h5file.flush()
     record.h5file.close()
+    
+    sg.SetMWStat(0)
     
     plt.show(block=True)
     

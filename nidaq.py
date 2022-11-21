@@ -24,23 +24,26 @@ class DAQ:
     """
 
     def __init__(self,
-                 DeviceName,
-                 SampleRate=2e6,
-                 VoltageLims=1.0
+                 DeviceName='',
+                 SampleRate=1e6,
+                 VoltageLims=1.0,
+                 configs = None
                  ):
         ## Possibe ranges: ±0.1 V, ±0.2 V, ±0.5 V, ±1 V, ±2 V, ±5 V, ±10 V
-
-        self.device_name = DeviceName
-
-        ## Parameters: default values used here are for USB 6363
-        self.sample_rate = SampleRate
-
+        if not configs is None:
+            self.set_configs(configs)
+        else:
+            self.device_name = DeviceName
+            ## Parameters: default values used here are for USB 6363
+            self.sample_rate = SampleRate
+    
         self.AI_task = 0
-        self.AI_read_size = 0
+        self.AI_read_size = 0 ## size in samples
         self.AI_channels = 1
+        self.AI_data = None
 
         self.AO_task = 0
-        self.AO_write_size = 0
+        self.AO_write_size = 0 ## size in samples
 
         ## dictionary of parameters for the experiment
         ## default values here can be changed per experiment
@@ -54,8 +57,14 @@ class DAQ:
                            'sample_mode': PyDAQmx.DAQmx_Val_FiniteSamps,
                            'output_voltage_limits': VoltageLims,
                            'output_rate': 1e3, ## Output not same a input rate
-                           'output_time_source': PyDAQmx.DAQmx_Val_Onboard
+                           'output_time_source': 'OnboardClock'
                            }
+        return
+        
+    def set_configs(self, configs):
+        self.device_name = configs['daq']['daq_device']
+        self.sample_rate = configs['daq']['ai_sample_rate']
+        return
 
     def prep_AI_channel(self, read_channels_list, SampsToRead, num_chan = 1):
 
@@ -67,9 +76,9 @@ class DAQ:
             chan = ''
             for ch in read_channels_list:
                 chan = chan + '/' + self.device_name \
-                + '/' + ch.lower() + ','
+                + '/' + ch + ','
         else: 
-            chan = '/' + self.device_name + '/' + read_channels_list[0].lower()
+            chan = '/' + self.device_name + '/' + read_channels_list[0]
 
         ## Create Analog Input Channel
         task.CreateAIVoltageChan(chan,
@@ -107,10 +116,15 @@ class DAQ:
         return
     ## end `prep_AI_read_task`
 
+
     def AI_read(self):
+        
         SampsToRead = self.AI_read_size
         
-        data = np.zeros((SampsToRead*self.AI_channels,), dtype=np.float64)
+        # if self.AI_data is not None:
+        #     data = np.zeros(int((SampsToRead*self.AI_channels,)), dtype=np.float64)
+        
+        data = np.zeros(int(SampsToRead*self.AI_channels), dtype=np.float64)
         
         self.AI_task.ReadAnalogF64(SampsToRead,
                                PyDAQmx.float64(self.exp_params['timeout']),
@@ -127,16 +141,21 @@ class DAQ:
     
     def prep_Analog_trigger(self, task, 
                             trig_channel, 
-                            slope = PyDAQmx.DAQmx_Val_RisingSlope,
-                            level = -0.95):
+                            slope = PyDAQmx.DAQmx_Val_FallingSlope,
+                            level = -0.9):
         
-        task.CfgAnlgEdgeStartTrig(self.device_name 
-                                  + '/' + trig_channel.lower(),
+        if trig_channel[:4] == 'APFI':
+            chan_name = trig_channel
+        else:
+           chan_name = self.device_name + '/' + trig_channel
+                                      
+        task.CfgAnlgEdgeStartTrig(chan_name,
                                   slope,
                                   level)
         
         return
     ## end `Analog_trigger`
+    
 
     def prep_AO_channel(self, write_channel, SampsToWrite):
         
@@ -144,7 +163,7 @@ class DAQ:
         self.AO_write_size = SampsToWrite
 
         task.CreateAOVoltageChan('/' + self.device_name
-                                 + '/' + write_channel.lower(),
+                                 + '/' + write_channel,
                                  '',
                                  -self.exp_params['output_voltage_limits'],
                                  self.exp_params['output_voltage_limits'],
@@ -175,6 +194,7 @@ class DAQ:
         self.AO_task = task
         return
     
+    
     def AO_write(self, write_Array):
         
         if len(write_Array) == self.AO_write_size:
@@ -190,6 +210,7 @@ class DAQ:
         
         return
 
+
     def start_task(self, task):
         task.StartTask()
         return
@@ -204,6 +225,7 @@ class DAQ:
         task.ClearTask()
         return
     ## end `clear`
+    
     
     def get_exp_params(self):
         print('Current Experimental Parameters')

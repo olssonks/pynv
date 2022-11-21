@@ -1,0 +1,55 @@
+sample = 'tyrion'
+project = 'Fast_Scan'
+author = 'Kevin'
+
+
+[measurement]
+type = 'fast_scan'
+averages = 100
+#sequence = 'seq_file'
+amps = [0] #dBm
+freqs = [2870]
+
+[measurement.sweep]
+## center MHz, span MHz, rate Hz
+center = 2870
+span = 200
+rate = 10
+
+
+[data]
+genres = ['raw']
+[data.info]
+units = ['mV', 'mV']
+sources = ['sweep_mod_output', 'photodiode']
+ 
+
+[sig_gen]
+number_sgs = 1
+IPs = ['10.229.42.141']
+ports = [5025]
+
+
+[daq]
+daq_device = 'dev1'
+terminal_type = 'RSE'
+units = 'Volts'
+fill_mode = 'channel'
+
+[daq.analog_input]
+ai_channels = ['ai23']
+ai_samples = 10e3  ## should be sample_rate/sweep_rate
+ai_sample_rate = 100e3
+ai_time_source = 'OnboardClock' #'PFI0'
+ai_voltage_limits = 1
+ai_active_edge = 'rising'
+
+[daq.analog_output]
+ao_channels = ['ao0']
+ao_samples = 10e3
+ao_sample_rate = 100e3 ## good practive to match AI rate, when possible
+ao_time_source = 'PFI1'
+ao_voltage_limts = 10
+ao_active_edge = 'rising'
+
+[other]

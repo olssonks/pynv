@@ -21,11 +21,33 @@ class SG380:
     '''
 
     def __init__(self,
-                 IPaddress,
-                 port = '5025' ## SRS tcpip port number
+                 IPaddress = None,
+                 port = '5025', ## SRS tcpip port number
+                 configs = None
                 ):
         ## create, open, and configure connection
+        
+        if not configs is None:
+            self.set_configs(configs)
+        
+        else:
+            rm = pyvisa.ResourceManager('@py')
+            self.inst = rm.open_resource(
+            				   'TCPIP0::'+IPaddress+'::'+port+'::SOCKET'
+            					)
+            self.inst.read_termination = '\r\n' ## specific termination for SRS
+            
+            self.frequency_units = 'MHz' ## default: work in MHz
+            self.output_port = 'Currently Not Known: Check Current Frequency'
+            
+            self.current_Freq = self.GetMWFreq()
+            self.current_Ampl = self.GetMWAmpl()
+            self.current_Stat = self.GetMWStat()
+        return
+    
+    def set_configs(self, configs):
         rm = pyvisa.ResourceManager('@py')
+        IPaddress = configs['sig_gen']['IPs']
         self.inst = rm.open_resource(
         				   'TCPIP0::'+IPaddress+'::'+port+'::SOCKET'
         					)
@@ -34,11 +56,10 @@ class SG380:
         self.frequency_units = 'MHz' ## default: work in MHz
         self.output_port = 'Currently Not Known: Check Current Frequency'
         
-        self.current_Freq = self.GetMWFreq()
-        self.current_Ampl = self.GetMWAmpl()
-        self.current_Stat = self.GetMWStat()
+        self.current_Freq = configs['measurement']['freqs'][0]
+        self.current_Ampl = configs['measurement']['amps'][0]
+        self.current_Stat = self.SetMWStat(1)
         return
-    
     
     def GetID(self):
         msg = self.inst.query('*IDN?')

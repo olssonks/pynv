@@ -12,8 +12,10 @@ class Logger:
 
     def __init__(self,
                  file_name,
-                 config={}):
+                 configs={}, 
+                 compress=False):
         # default compression settings
+        self.compress = compress
         self.complevel = 9
         self.complib = 'blosc'
         self.shuffle = True
@@ -23,13 +25,13 @@ class Logger:
         self.h5file = self.get_file(self.file_name)
         self.meas_type = ''
         self.meas_num = 0
-        self.meas_config = config
+        self.meas_config = configs
 
         
 
         self.expectedrows = 128
         self.atom = tables.Atom.from_sctype('float64')
-        self.chunkshape = (128,2,256)
+        #self.chunkshape = (128,2,256)
 
         self.current_arrays = {}
 
@@ -37,10 +39,14 @@ class Logger:
 
 
     def get_file(self, name):
-        filt = tables.Filters(complevel=self.complevel,
-                              complib=self.complib,
-                              shuffle = self.shuffle,
-                              bitshuffle=self.bitshuffle)
+        
+        if self.compress:
+            filt = tables.Filters(complevel=self.complevel,
+                                  complib=self.complib,
+                                  shuffle = self.shuffle,
+                                  bitshuffle=self.bitshuffle)
+        else:
+            filt = None
 
         if not '.h5' == name[-3:]:
             name = name + '.h5'
@@ -95,7 +101,7 @@ class Logger:
 
                 loc = self.h5file.create_group(meas, f'M{self.meas_num:03d}')
             else:
-                loc = self.h5file.root['/' + f'{self.meas_num:04d}']
+                loc = self.h5file.root['/' + m_type+ f'/M{self.meas_num:03d}']
 
             self.h5file.set_node_attr(loc, 'config', str(meas_config))
             self.meas_type = m_type
@@ -117,8 +123,7 @@ class Logger:
                 f'{genre}',
                 atom=self.atom,
                 shape=array_shape,
-                expectedrows=self.expectedrows,
-                chunkshape = self.chunkshape
+                expectedrows=self.expectedrows
             )
 
         self.current_arrays[f'{genre}'].append([data])

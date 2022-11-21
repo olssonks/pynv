@@ -1,16 +1,4 @@
-import queue
-import threading
-
-from srs import SG380
-from nidaq import DAQ
-from utils.data_logger import Logger
-from utils.Args import get_configs
-
 import numpy as np
-import PyDAQmx
-import time
-
-
 import matplotlib.pyplot as plt
 
 def update_plot(data, figure, axs, plot1):
@@ -31,12 +19,12 @@ def update_plot(data, figure, axs, plot1):
     plt.pause(0.1)
     return
 
-def fast_scan_fig(samps, config):
-    
+def fast_scan_fig(samples, configs):
+    samps = int(samples)
     if configs['data']['info']:
-        x_label, y_label = config['data']['info']['units']
+        [x_label, y_label] = configs['data']['info']['units']
     else: 
-        x_label, y_label = ('X Axis', 'Y-Axis')
+        x_label, y_label = 'X Axis', 'Y-Axis'
     
     figure, axs = plt.subplots(2,1, figsize=(4,5))
     # Data Coordinates
@@ -48,5 +36,5 @@ def fast_scan_fig(samps, config):
     plot1, = axs[0].plot(x, y)
     # Labels
     axs[0].set_xlabel(x_label,fontsize=18)
-    axs[0].set_ylabel(y_lable,fontsize=18)
+    axs[0].set_ylabel(y_label,fontsize=18)
     return figure, axs, plot1
