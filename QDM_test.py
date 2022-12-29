@@ -3,29 +3,30 @@ from srs import SG380
 from nidaq import DAQ
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import PyDAQmx
 
-sg = SG380('10.229.42.141')
+# sg = SG380('10.229.42.141')
 
-sg.SetMWFreq(2870)
-sg.SetMWAmpl(0.0)
-sg.SetMWStat(1)
+# sg.SetMWFreq(2870)
+# sg.SetMWAmpl(0.0)
+# sg.SetMWStat(1)
 
-sg.SetMWSweep(2870, 250, 10)
+# sg.SetMWSweep(2870, 250, 10)
 
-daq = DAQ('dev1', SampleRate=100e3)
-daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_RSE
+daq = DAQ('Dev2', SampleRate=10e3, VoltageLims=2.0)
+daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_Diff
 
-samps = 100000
+samps = 10000
 
 x_vals = np.arange(samps)
 
 y_vals = np.zeros(samps)
 
-daq.prep_AI_channel(['ai23','ai1'], samps, num_chan = 2)
+daq.prep_AI_channel(['ai1', 'ai23'], samps, num_chan = 2)
 
-daq.prep_Analog_trigger(daq.AI_task, 'APFI0', level=-0.88)
+daq.prep_Analog_trigger(daq.AI_task, 'APFI0', level=-0.90)
 
 daq.start_task( daq.AI_task )
 
@@ -68,10 +69,26 @@ daq.stop_task(daq.AI_task)
 
 # pyplot.show()
 
-# center = 10e-6
-# span = 5e-6
-# rate = 10
+center = 2870
+span = 200
+rate = 1
 
-# def VoltToFreq(volts, center, span):
-#     freqs = center + np.array(volts)*span/2
-#     return freqs
+def VoltToFreq(volts, center, span):
+    freqs = center + np.array(volts)*span/2
+    return freqs
+
+#######################
+### Single Run Analysis
+#######################
+
+def convert_data(data):
+    trim = 100
+    data_r = data.reshape(2, samps)
+    x = VoltToFreq(data_r[0], center, span)
+    y = data_r[1]
+    
+    y[:trim] = y[trim]
+    return x,y
+
+x0, y0 = convert_data(data)
+    

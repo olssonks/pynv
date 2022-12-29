@@ -1,7 +1,7 @@
 import sys
 from line_profiler import LineProfiler
 
-from fit_test import main
+from fast_scan_single_run import main
 
 lp = LineProfiler()
 

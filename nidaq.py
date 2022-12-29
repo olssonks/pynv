@@ -1,6 +1,6 @@
 import PyDAQmx
 import numpy as np
-
+import time
 
 class DAQ:
     """
@@ -29,7 +29,8 @@ class DAQ:
                  VoltageLims=1.0,
                  configs = None
                  ):
-        ## Possibe ranges: ±0.1 V, ±0.2 V, ±0.5 V, ±1 V, ±2 V, ±5 V, ±10 V
+        ## Possibe Lims: ±0.1 V, ±0.2 V, ±0.5 V, ±1 V, ±2 V, ±5 V, ±10 V
+        
         if not configs is None:
             self.set_configs(configs)
         else:
@@ -68,7 +69,7 @@ class DAQ:
 
     def prep_AI_channel(self, read_channels_list, SampsToRead, num_chan = 1):
 
-        task = PyDAQmx.Task()
+        task = PyDAQmx.Task() # 'ai_task-'+f'{(time.time() % 1):.8f}'[2:]
         self.AI_read_size = SampsToRead
         self.AI_channels = num_chan
         
@@ -138,32 +139,24 @@ class DAQ:
         return data
     ## end `read`
     
-    
-    def prep_Analog_trigger(self, task, 
-                            trig_channel, 
-                            slope = PyDAQmx.DAQmx_Val_FallingSlope,
-                            level = -0.9):
-        
-        if trig_channel[:4] == 'APFI':
-            chan_name = trig_channel
-        else:
-           chan_name = self.device_name + '/' + trig_channel
-                                      
-        task.CfgAnlgEdgeStartTrig(chan_name,
-                                  slope,
-                                  level)
-        
-        return
-    ## end `Analog_trigger`
-    
 
-    def prep_AO_channel(self, write_channel, SampsToWrite):
+    def prep_AO_channel(self, write_channels_list, SampsToWrite, num_chan):
         
-        task = PyDAQmx.Task()
+        task = PyDAQmx.Task() #'ao_task-'+f'{(time.time() % 1):.8f}'[2:]
+        
         self.AO_write_size = SampsToWrite
+        
+        self.AO_channels = num_chan
+        
+        if not num_chan == 1:
+            chan = ''
+            for ch in write_channels_list:
+                chan = chan + '/' + self.device_name \
+                + '/' + ch + ','
+        else: 
+            chan = '/' + self.device_name + '/' + write_channels_list[0]
 
-        task.CreateAOVoltageChan('/' + self.device_name
-                                 + '/' + write_channel,
+        task.CreateAOVoltageChan(chan,
                                  '',
                                  -self.exp_params['output_voltage_limits'],
                                  self.exp_params['output_voltage_limits'],
@@ -197,19 +190,55 @@ class DAQ:
     
     def AO_write(self, write_Array):
         
-        if len(write_Array) == self.AO_write_size:
-            self.AO_task.WriteAnalogF64(self.AO_write_size,
-                                        1, ## auto start off
-                                        self.exp_params['timeout'],
-                                        self.exp_params['fill_mode'],
-                                        write_Array,
-                                        None
-                                        )
-        else:
-            print('Write array length not equal to length prepared for AO')
+        write_per_chan = int(write_Array.shape[0] / self.AO_channels)
+        
+        #if len(write_Array) == self.AO_write_size:
+        self.AO_task.WriteAnalogF64(write_per_chan,
+                                    0, ## auto start off
+                                    self.exp_params['timeout'],
+                                    self.exp_params['fill_mode'],
+                                    write_Array,
+                                    PyDAQmx.byref(PyDAQmx.int32()),
+                                    None
+                                    )
+        # else:
+        #     print('Write array length not equal to length prepared for AO')
         
         return
 
+
+    def prep_Analog_trigger(self, task, 
+                            trig_channel, 
+                            slope = PyDAQmx.DAQmx_Val_FallingSlope,
+                            level = -0.9):
+        
+        if trig_channel[:4] == 'APFI':
+            chan_name = trig_channel
+        else:
+           chan_name = self.device_name + '/' + trig_channel
+                                      
+        task.CfgAnlgEdgeStartTrig(chan_name,
+                                  slope,
+                                  level)
+        
+        return
+    ## end `Analog_trigger`
+    
+    
+    def prep_Digital_trigger(self, task, 
+                            trig_channel, 
+                            slope = PyDAQmx.DAQmx_Val_RisingSlope,):
+        
+        if trig_channel[:3] == 'PFI':
+            chan_name = trig_channel
+        else:
+           chan_name = self.device_name + '/' + trig_channel
+                                      
+        task.CfgDigEdgeStartTrig(chan_name, slope)
+        
+        return
+    ## end `Analog_trigger`
+    
 
     def start_task(self, task):
         task.StartTask()

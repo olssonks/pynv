@@ -100,27 +100,27 @@ if __name__ == "__main__":
     num_chan = len(channels)
     
     #daq = DAQ(configs=configs)
-    daq = DAQ(DeviceName=configs['daq_device'], 
+    daq = DAQ(DeviceName=configs['daq']['daq_device'], 
               SampleRate=100e3)
     daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_RSE
     
-    daq.prep_AI_channel(channels, 
-                        samps, 
-                        num_chan = num_chan
-                        )
+    # daq.prep_AI_channel(channels, 
+    #                     samps, 
+    #                     num_chan = num_chan
+    #                     )
     
-    daq.prep_Analog_trigger(daq.AI_task, 
-                            'APFI0', 
-                            level=-0.88)
+    # daq.prep_Analog_trigger(daq.AI_task, 
+    #                         'APFI0', 
+    #                         level=-0.88)
     
-    # daq = DAQ('dev1', SampleRate=100e3)
-    # daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_RSE
+    daq = DAQ('dev1', SampleRate=100e3)
+    daq.exp_params['terminal_type'] = PyDAQmx.DAQmx_Val_RSE
 
-    # samps = 10000
+    samps = 10000
 
-    # daq.prep_AI_channel(['ai23'], samps, num_chan = 1)
+    daq.prep_AI_channel(['ai23'], samps, num_chan = 1)
 
-    # daq.prep_Analog_trigger(daq.AI_task, 'APFI0', level=-0.88)
+    daq.prep_Analog_trigger(daq.AI_task, 'APFI0', level=-0.88)
 
     
     cue_acq = queue.Queue()

@@ -10,6 +10,12 @@ def lor2(x, c1, w1, a1, c2, w2, a2, off):
     return 1 + off - (a1/np.pi * w1 /( (x-c1)**2 + (w1)**2)
                       + (a2/np.pi * w2 /( (x-c2)**2 + (w2)**2)))
 
+def lor3(x, c1, w1, a1, w2, a2, w3, a3, off):
+    return 1 + off - (a1/np.pi * w1 /( (x-c1)**2 + (w1)**2)
+                      + (a2/np.pi * w2 /( (x- c1-1.5)**2 + (w2)**2))
+                      + (a3/np.pi * w3 /( (x - c1-3)**2 + (w3)**2))
+                      )
+
 
 # data = np.load('data/test_data.npy')
 # data = np.stack(data.reshape(2, 10, 10000), axis=1)
@@ -53,19 +59,24 @@ def lor2(x, c1, w1, a1, c2, w2, a2, off):
 
 
 x1 = np.linspace(2925, 2965, 1001)
-y1 = lor(x1, 2945, 1, 0.25, 0) + lor(x1, 2945+3, 1, 0.15, 0) + lor(x1, 2945-3, 1, 0.15, 0)
+ytrue = lor(x1, 2945, 0.5, 0.15, 0) + lor(x1, 2945+1.5, 0.5, 0.25, 0) + lor(x1, 2945+3, 0.5, 0.15, 0)
+y1 = lor(x1, 2945, 0.5, 0.15, 0) + lor(x1, 2945+1.5, 0.5, 0.25, 0) + lor(x1, 2945+3, 0.5, 0.15, 0) + 0.01*np.random.random(1001)
 
 xfit = [x1, 0]
 yfit = [y1/y1.max(), 0]
 
-guesses = [2940, 5, 0.05, 0.001]
+guesses = [2940, 1, 0.05,
+           1, 0.05,
+           1, 0.05,
+           0.001,]
 
-popt, pcov = curve_fit(lor, xfit[0], yfit[0], guesses, maxfev=10000)
+popt, pcov = curve_fit(lor3, xfit[0], yfit[0], guesses, maxfev=10000)
 
-f1 = lor(xfit[0], *popt)
+f1 = lor3(xfit[0], *popt)
 
-plt.plot(xfit[0], f1)
+
 plt.plot(xfit[0], yfit[0])
+plt.plot(xfit[0], f1)
 plt.show()
 
 def main():
@@ -82,7 +93,7 @@ def main():
                      np.linspace(2942.5, 2947, 200),
                      np.linspace(2956.5, 2965, 200)
                      ]).flatten()
-    y1 = lor(x1, 2945, 1, 0.25, 0) + lor(x1, 2945+3, 1, 0.15, 0) + lor(x1, 2945-3, 1, 0.15, 0)
+    y1 = lor(x1, 2945, 1, 0.25, 0) + lor(x1, 2945+1.5, 1, 0.15, 0) + lor(x1, 2945-1.5, 1, 0.15, 0)
     
     # dcut = 2
     # ucut = 9806
@@ -141,5 +152,5 @@ def main():
     
     return
 
-if __name__ == "__main__": 
-    main()
+# if __name__ == "__main__": 
+#     main()
