@@ -4,7 +4,7 @@ author = 'Kevin'
 
 [measurement]
 type = 'ODMR'
-mw_amps = [0] #dBm
+mw_amps = [0]
 mw_freq_ranges = [[2400, 3400]]
 sequence = 'seq_file'
 
@@ -34,5 +34,3 @@ ao_sample_rate = 25e3
 ao_time_source = 'PFI1'
 ao_voltage_limts = 10
 ao_active_edge = 'rising'
-
-[other]
