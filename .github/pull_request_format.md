@@ -1,5 +1,5 @@
 ## Commit Message Format
-Commits follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format. Each commit message consists of a **header**, a **body** and a **footer**. The header has a special
+Commits follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format. Each commit message consists of a **header**, a **body** and a **footer**. Pull requests should also follow this format. gThe header has a special
 format that includes a **type**, a **scope** and a **subject**:
 
 ```

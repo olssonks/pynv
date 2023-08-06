@@ -25,6 +25,6 @@ module.exports = {
             'always',
             validateBodyMaxLengthIgnoringDeps,
         ],
-        "type-enum": [2, "always", ["build", "chore", "docs", "feat", "fix", "revert", "style", "test"]],
+        "type-enum": [2, "always", ["build", "docs", "feat", "fix", "revert", "test"]],
     },
 }
