@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/olssonks/pynv/compare/v0.1.0...v0.1.1) (2023-08-07)
+
+
+### Documentation
+
+* pull request template ([#19](https://github.com/olssonks/pynv/issues/19)) ([79c9952](https://github.com/olssonks/pynv/commit/79c995208aa9e60b1037af5fde3c572e3e7b4593))
+
 ## [0.1.0](https://github.com/olssonks/pynv/compare/v0.0.1...v0.1.0) (2023-08-07)
 
 
