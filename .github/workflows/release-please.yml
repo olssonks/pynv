@@ -1,4 +1,8 @@
-
+name: release-please
+on:
+  merge:
+    branches:
+      - main
 jobs:
   release-please:
     runs-on: ubuntu-latest
