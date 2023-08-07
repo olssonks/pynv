@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: ahmadnassri/action-commit-lint@v1
+      - uses: actions/checkout@v3
+      - uses: wagoid/commitlint-github-action@v5
         with:
           config: ./path/to/commitlint.config
