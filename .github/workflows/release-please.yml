@@ -1,6 +1,6 @@
 name: release-please
 on:
-  merge:
+  pull_request:
     branches:
       - main
 jobs:
