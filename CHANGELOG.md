@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/olssonks/pynv/compare/v0.1.2...v0.1.3) (2023-08-08)
+
+
+### Documentation
+
+* docs release ([8421731](https://github.com/olssonks/pynv/commit/8421731f6e2a9e7439b8d43eb4644ac58e1563b2))
+
 ## [0.1.2](https://github.com/olssonks/pynv/compare/v0.1.1...v0.1.2) (2023-08-08)
 
 
