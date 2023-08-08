@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/olssonks/pynv/compare/v0.1.1...v0.1.2) (2023-08-08)
+
+
+### Documentation
+
+* syncing branches ([#21](https://github.com/olssonks/pynv/issues/21)) ([245aec6](https://github.com/olssonks/pynv/commit/245aec675a2f1a89f096e9b2d4b433dbe1209efd))
+
 ## [0.1.1](https://github.com/olssonks/pynv/compare/v0.1.0...v0.1.1) (2023-08-07)
 
 
