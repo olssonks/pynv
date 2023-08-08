@@ -18,4 +18,5 @@ jobs:
         with:
           release-type: python
           package-name: release-please-action
+          versioning-strategy: default
           repo-token: ${{ secrets.GITHUB_TOKEN }}
