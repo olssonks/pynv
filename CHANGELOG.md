@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.4 (2023-08-14)
+
+### Fix
+
+- now main is updated
+- does this bump version
+
+### Refactor
+
+- update action
+- syncing branches
+- add commitizen
+- checking commitizen
+
 ## [0.1.3](https://github.com/olssonks/pynv/compare/v0.1.2...v0.1.3) (2023-08-08)
 
 
