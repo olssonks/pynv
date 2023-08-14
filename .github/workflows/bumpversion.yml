@@ -28,4 +28,3 @@ jobs:
           tag_name: ${{ env.REVISION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
