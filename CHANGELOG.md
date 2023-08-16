@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.0 (2023-08-14)
+
+### Feat
+
+- trying to make bump work
+- trying to make bump work
+
+### Fix
+
+- another bug fix
+- testing verioning
+- testing verioning
+- now main is updated
+- does this bump version
+
+### Refactor
+
+- unsure
+- update action
+- syncing branches
+- add commitizen
+- checking commitizen
+
 ## [0.1.3](https://github.com/olssonks/pynv/compare/v0.1.2...v0.1.3) (2023-08-08)
 
 
