@@ -1,3 +1,4 @@
 import sys
 import os
-import time
+
+bug_1 = 1
